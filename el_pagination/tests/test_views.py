@@ -1,6 +1,5 @@
 """View tests."""
 
-from __future__ import unicode_literals
 
 from django.core.exceptions import ImproperlyConfigured
 from django.http import Http404
@@ -23,7 +22,8 @@ class AjaxListViewTest(TestCase):
         factory = RequestFactory()
         self.request = factory.get(self.url)
         self.ajax_request = factory.get(
-            self.url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+            self.url, HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
 
     def check_response(self, response, template_name, object_list):
         """Execute several assertions on the response.
@@ -34,7 +34,8 @@ class AjaxListViewTest(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertSequenceEqual([template_name], response.template_name)
         self.assertSequenceEqual(
-            list(object_list), response.context_data['object_list'])
+            list(object_list), response.context_data['object_list'],
+        )
 
     def make_view(self, *args, **kwargs):
         """Return an instance of AjaxListView."""

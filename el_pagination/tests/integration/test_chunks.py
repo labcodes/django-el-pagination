@@ -1,6 +1,5 @@
 """On scroll chunks integration tests."""
 
-from __future__ import unicode_literals
 
 from el_pagination.tests.integration import SeleniumTestCase
 
@@ -41,7 +40,7 @@ class ChunksPaginationTest(SeleniumTestCase):
     def test_chunks(self):
         # Ensure new items are not loaded on scroll if the chunk is complete.
         self.get()
-        for i in range(5):
+        for __ in range(5):
             self.scroll_down()
             self.wait_ajax()
         self.assertElements('object', range(1, 16))

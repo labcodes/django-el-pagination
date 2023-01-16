@@ -1,6 +1,5 @@
 """Customized Django paginators."""
 
-from __future__ import unicode_literals
 
 from math import ceil
 
@@ -19,7 +18,8 @@ class CustomPage(Page):
         elif self.number == 1:
             return 1
         return (
-            (self.number - 2) * paginator.per_page + paginator.first_page + 1)
+            (self.number - 2) * paginator.per_page + paginator.first_page + 1
+        )
 
     def end_index(self):
         """Return the 1-based index of the last item on this page."""
@@ -42,7 +42,7 @@ class BasePaginator(Paginator):
             self.first_page = kwargs.pop('first_page')
         else:
             self.first_page = per_page
-        super(BasePaginator, self).__init__(object_list, per_page, **kwargs)
+        super().__init__(object_list, per_page, **kwargs)
 
     def get_current_per_page(self, number):
         return self.first_page if number == 1 else self.per_page

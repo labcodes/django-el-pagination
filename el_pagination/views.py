@@ -1,6 +1,5 @@
 """Django EL Pagination class-based views."""
 
-from __future__ import unicode_literals
 
 from django.core.exceptions import ImproperlyConfigured
 from django.http import Http404
@@ -12,7 +11,7 @@ from django.views.generic.list import MultipleObjectTemplateResponseMixin
 from el_pagination.settings import PAGE_LABEL
 
 
-class MultipleObjectMixin(object):
+class MultipleObjectMixin:
 
     allow_empty = True
     context_object_name = None
@@ -56,7 +55,7 @@ class MultipleObjectMixin(object):
             return self.context_object_name
         elif hasattr(object_list, 'model'):
             object_name = object_list.model._meta.object_name.lower()
-            return smart_str('{0}_list'.format(object_name))
+            return smart_str(f'{object_name}_list')
         else:
             return None
 
@@ -87,7 +86,8 @@ class MultipleObjectMixin(object):
                 page_template = self.get_page_template(**kwargs)
             else:
                 raise ImproperlyConfigured(
-                    'AjaxListView requires a page_template')
+                    'AjaxListView requires a page_template',
+                )
         context['page_template'] = self.page_template = page_template
 
         return context
@@ -102,7 +102,8 @@ class BaseListView(MultipleObjectMixin, View):
             msg = _('Empty list and ``%(class_name)s.allow_empty`` is False.')
             raise Http404(msg % {'class_name': self.__class__.__name__})
         context = self.get_context_data(
-            object_list=self.object_list, page_template=self.page_template)
+            object_list=self.object_list, page_template=self.page_template,
+        )
         return self.render_to_response(context)
 
 
@@ -125,7 +126,8 @@ class InvalidPaginationListView:
 
 
 class AjaxMultipleObjectTemplateResponseMixin(
-        MultipleObjectTemplateResponseMixin):
+        MultipleObjectTemplateResponseMixin,
+):
 
     key = PAGE_LABEL
     page_template = None
@@ -139,7 +141,7 @@ class AjaxMultipleObjectTemplateResponseMixin(
         *self.as_view*.
         """
         opts = self.object_list.model._meta
-        return '{0}/{1}{2}{3}.html'.format(
+        return '{}/{}{}{}.html'.format(
             opts.app_label,
             opts.object_name.lower(),
             self.template_name_suffix,
@@ -150,12 +152,13 @@ class AjaxMultipleObjectTemplateResponseMixin(
         """Switch the templates for Ajax requests."""
         request = self.request
         key = 'querystring_key'
-        querystring_key = request.GET.get(key,
-            request.POST.get(key, PAGE_LABEL))
+        querystring_key = request.GET.get(
+            key,
+            request.POST.get(key, PAGE_LABEL),
+        )
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and querystring_key == self.key:
             return [self.page_template or self.get_page_template()]
-        return super(
-            AjaxMultipleObjectTemplateResponseMixin, self).get_template_names()
+        return super().get_template_names()
 
 
 class AjaxListView(AjaxMultipleObjectTemplateResponseMixin, BaseListView):

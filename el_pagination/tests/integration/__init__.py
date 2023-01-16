@@ -1,6 +1,5 @@
 """Integration tests base objects definitions."""
 
-from __future__ import unicode_literals
 
 import os
 import unittest
@@ -47,7 +46,8 @@ def teardown_package():
 
 @unittest.skipIf(
     not USE_SELENIUM,
-    'excluding integration tests: environment variable USE_SELENIUM is not set.')
+    'excluding integration tests: environment variable USE_SELENIUM is not set.',
+)
 class SeleniumTestCase(StaticLiveServerTestCase):
     """Base test class for integration tests."""
 
@@ -115,7 +115,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         if data is not None:
             querydict.update(data)
         querydict.update(kwargs)
-        path = '{0}?{1}'.format(url, querydict.urlencode())
+        path = f'{url}?{querydict.urlencode()}'
 
         # the following javascript scrolls down the entire page body.  Since Twitter
         # uses "infinite scrolling", more content will be added to the bottom of the
@@ -185,7 +185,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
                 actual=current_elements,
                 expected=elements,
                 class_name=class_name,
-            )
+            ),
         )
 
     @contextmanager

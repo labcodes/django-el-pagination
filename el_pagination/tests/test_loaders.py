@@ -1,6 +1,5 @@
 """Loader tests."""
 
-from __future__ import unicode_literals
 
 from contextlib import contextmanager
 
@@ -12,7 +11,7 @@ from el_pagination import loaders
 test_object = 'test object'
 
 
-class ImproperlyConfiguredTestMixin(object):
+class ImproperlyConfiguredTestMixin:
     """Include an ImproperlyConfigured assertion."""
 
     @contextmanager

@@ -1,6 +1,5 @@
 """Decorator tests."""
 
-from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -8,7 +7,7 @@ from django.test.client import RequestFactory
 from el_pagination import decorators
 
 
-class DecoratorsTestMixin(object):
+class DecoratorsTestMixin:
     """Base test mixin for decorators.
 
     Subclasses (actual test cases) must implement the ``get_decorator`` method
@@ -98,7 +97,8 @@ class PageTemplateTest(DecoratorsTestMixin, TestCase):
         # the view still uses the default template even if the request is Ajax.
         view = self.decorate(self.arg)
         templates = view(
-            self.factory.get(self.mypage_url, **self.ajax_headers))
+            self.factory.get(self.mypage_url, **self.ajax_headers),
+        )
         self.assertTemplatesEqual(self.default, self.page, templates)
 
     def test_ajax_request_to_mypage(self):
@@ -106,7 +106,8 @@ class PageTemplateTest(DecoratorsTestMixin, TestCase):
         # and another template fragment is requested.
         view = self.decorate(self.mypage, key='mypage')
         templates = view(
-            self.factory.get(self.mypage_url, **self.ajax_headers))
+            self.factory.get(self.mypage_url, **self.ajax_headers),
+        )
         self.assertTemplatesEqual(self.mypage, self.mypage, templates)
 
 
@@ -129,7 +130,8 @@ class PageTemplatesTest(DecoratorsTestMixin, TestCase):
         # the view switches to the givent template if the request is Ajax.
         view = self.decorate(self.arg)
         templates = view(
-            self.factory.get(self.mypage_url, **self.ajax_headers))
+            self.factory.get(self.mypage_url, **self.ajax_headers),
+        )
         self.assertTemplatesEqual(self.mypage, self.mypage, templates)
 
 

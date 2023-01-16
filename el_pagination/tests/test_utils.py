@@ -1,6 +1,5 @@
 """Utilities tests."""
 
-from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -37,7 +36,7 @@ class GetPageNumberFromRequestTest(TestCase):
     def test_default_querystring_key(self):
         # Ensure the default page label is used if ``querystring_key``
         # is not provided.
-        request = self.factory.get('?{0}=2'.format(PAGE_LABEL))
+        request = self.factory.get(f'?{PAGE_LABEL}=2')
         self.assertEqual(2, utils.get_page_number_from_request(request))
 
     def test_default(self):
@@ -49,9 +48,10 @@ class GetPageNumberFromRequestTest(TestCase):
 
     def test_custom_querystring_key(self):
         # Ensure the page returned correctly reflects the ``querystring_key``.
-        request = self.factory.get('?mypage=4'.format(PAGE_LABEL))  # noqa: F523
+        request = self.factory.get('?mypage=4')  # noqa: F523
         page_number = utils.get_page_number_from_request(
-            request, querystring_key='mypage')
+            request, querystring_key='mypage',
+        )
         self.assertEqual(4, page_number)
 
     def test_post_data(self):
@@ -67,7 +67,8 @@ class GetPageNumbersTest(TestCase):
         pages = utils.get_page_numbers(10, 20)
         expected = [
             'previous', 1, 2, 3, None, 8, 9, 10, 11, 12,
-            None, 18, 19, 20, 'next']
+            None, 18, 19, 20, 'next',
+        ]
         self.assertSequenceEqual(expected, pages)
 
     def test_first_page(self):
@@ -110,7 +111,8 @@ class GetPageNumbersTest(TestCase):
         # Ensure the pages are returned correctly adding first / last arrows.
         pages = utils.get_page_numbers(5, 10, arrows=True)
         expected = [
-            'first', 'previous', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'next', 'last']
+            'first', 'previous', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'next', 'last',
+        ]
         self.assertSequenceEqual(expected, pages)
 
     def test_arrows_first_page(self):
@@ -141,8 +143,11 @@ class IterFactorsTest(TestCase):
         test_data = (
             (1, 10, [1, 3, 10, 30, 100, 300, 1000, 3000, 10000, 30000]),
             (5, 10, [5, 15, 50, 150, 500, 1500, 5000, 15000, 50000, 150000]),
-            (10, 10, [
-                10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000, 300000]),
+            (
+                10, 10, [
+                    10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000, 300000,
+                ],
+            ),
         )
         self._run_tests(test_data)
 
@@ -237,14 +242,23 @@ class MakeElasticRangeTest(TestCase):
         test_data = (
             (1, 500, [1, 5, 13, 41, 121, 380, 460, 488, 496, 500]),
             (1, 1000, [1, 10, 28, 91, 271, 730, 910, 973, 991, 1000]),
-            (1, 10000, [
-                1, 100, 298, 991, 2971, 7030, 9010, 9703, 9901, 10000]),
-            (1, 100000, [
-                1, 1000, 2998, 9991, 29971, 70030, 90010, 97003, 99001,
-                100000]),
-            (1, 1000000, [
-                1, 10000, 29998, 99991, 299971, 700030, 900010, 970003,
-                990001, 1000000]),
+            (
+                1, 10000, [
+                    1, 100, 298, 991, 2971, 7030, 9010, 9703, 9901, 10000,
+                ],
+            ),
+            (
+                1, 100000, [
+                    1, 1000, 2998, 9991, 29971, 70030, 90010, 97003, 99001,
+                    100000,
+                ],
+            ),
+            (
+                1, 1000000, [
+                    1, 10000, 29998, 99991, 299971, 700030, 900010, 970003,
+                    990001, 1000000,
+                ],
+            ),
         )
         self._run_tests(test_data)
 
@@ -285,94 +299,175 @@ class GetElasticPageNumbersTest(TestCase):
     def test_get_elastic_page_numbers_tens(self):
         # Ensure the callable returns the expected values for tens.
         test_data = (
-            (1, 11, [
-                1, 2, 4, 8, 10, 11, 'next', 'last']),
-            (2, 11, [
-                'first', 'previous', 1, 2, 3, 5, 8, 10, 11, 'next', 'last']),
-            (3, 11, [
-                'first', 'previous', 1, 2, 3, 4, 6, 8, 10, 11, 'next',
-                'last']),
-            (4, 11, [
-                'first', 'previous', 1, 2, 3, 4, 5, 7, 8, 10, 11, 'next',
-                'last']),
-            (5, 11, [
-                'first', 'previous', 1, 2, 4, 5, 6, 8, 10, 11, 'next',
-                'last']),
-            (6, 11, [
-                'first', 'previous', 1, 2, 5, 6, 7, 10, 11, 'next', 'last']),
-            (7, 11, [
-                'first', 'previous', 1, 2, 4, 6, 7, 8, 10, 11, 'next',
-                'last']),
-            (8, 11, [
-                'first', 'previous', 1, 2, 4, 5, 7, 8, 9, 10, 11, 'next',
-                'last']),
-            (9, 11, [
-                'first', 'previous', 1, 2, 4, 6, 8, 9, 10, 11, 'next',
-                'last']),
-            (10, 11, [
-                'first', 'previous', 1, 2, 4, 7, 9, 10, 11, 'next', 'last']),
+            (
+                1, 11, [
+                    1, 2, 4, 8, 10, 11, 'next', 'last',
+                ],
+            ),
+            (
+                2, 11, [
+                    'first', 'previous', 1, 2, 3, 5, 8, 10, 11, 'next', 'last',
+                ],
+            ),
+            (
+                3, 11, [
+                    'first', 'previous', 1, 2, 3, 4, 6, 8, 10, 11, 'next',
+                    'last',
+                ],
+            ),
+            (
+                4, 11, [
+                    'first', 'previous', 1, 2, 3, 4, 5, 7, 8, 10, 11, 'next',
+                    'last',
+                ],
+            ),
+            (
+                5, 11, [
+                    'first', 'previous', 1, 2, 4, 5, 6, 8, 10, 11, 'next',
+                    'last',
+                ],
+            ),
+            (
+                6, 11, [
+                    'first', 'previous', 1, 2, 5, 6, 7, 10, 11, 'next', 'last',
+                ],
+            ),
+            (
+                7, 11, [
+                    'first', 'previous', 1, 2, 4, 6, 7, 8, 10, 11, 'next',
+                    'last',
+                ],
+            ),
+            (
+                8, 11, [
+                    'first', 'previous', 1, 2, 4, 5, 7, 8, 9, 10, 11, 'next',
+                    'last',
+                ],
+            ),
+            (
+                9, 11, [
+                    'first', 'previous', 1, 2, 4, 6, 8, 9, 10, 11, 'next',
+                    'last',
+                ],
+            ),
+            (
+                10, 11, [
+                    'first', 'previous', 1, 2, 4, 7, 9, 10, 11, 'next', 'last',
+                ],
+            ),
             (11, 11, ['first', 'previous', 1, 2, 4, 8, 10, 11]),
             (1, 12, [1, 2, 4, 9, 11, 12, 'next', 'last']),
-            (2, 12, [
-                'first', 'previous', 1, 2, 3, 5, 9, 11, 12, 'next', 'last']),
-            (6, 12, [
-                'first', 'previous', 1, 2, 5, 6, 7, 9, 11, 12, 'next',
-                'last']),
-            (7, 12, [
-                'first', 'previous', 1, 2, 4, 6, 7, 8, 11, 12, 'next',
-                'last']),
-            (11, 12, [
-                'first', 'previous', 1, 2, 4, 8, 10, 11, 12, 'next', 'last']),
+            (
+                2, 12, [
+                    'first', 'previous', 1, 2, 3, 5, 9, 11, 12, 'next', 'last',
+                ],
+            ),
+            (
+                6, 12, [
+                    'first', 'previous', 1, 2, 5, 6, 7, 9, 11, 12, 'next',
+                    'last',
+                ],
+            ),
+            (
+                7, 12, [
+                    'first', 'previous', 1, 2, 4, 6, 7, 8, 11, 12, 'next',
+                    'last',
+                ],
+            ),
+            (
+                11, 12, [
+                    'first', 'previous', 1, 2, 4, 8, 10, 11, 12, 'next', 'last',
+                ],
+            ),
             (12, 12, ['first', 'previous', 1, 2, 4, 9, 11, 12]),
             (1, 15, [1, 2, 4, 12, 14, 15, 'next', 'last']),
-            (5, 15, [
-                'first', 'previous', 1, 2, 4, 5, 6, 8, 12, 14, 15, 'next',
-                'last']),
-            (10, 15, [
-                'first', 'previous', 1, 2, 4, 7, 9, 10, 11, 14, 15, 'next',
-                'last']),
+            (
+                5, 15, [
+                    'first', 'previous', 1, 2, 4, 5, 6, 8, 12, 14, 15, 'next',
+                    'last',
+                ],
+            ),
+            (
+                10, 15, [
+                    'first', 'previous', 1, 2, 4, 7, 9, 10, 11, 14, 15, 'next',
+                    'last',
+                ],
+            ),
             (15, 15, ['first', 'previous', 1, 2, 4, 12, 14, 15]),
             (1, 100, [1, 2, 4, 11, 31, 70, 90, 97, 99, 100, 'next', 'last']),
-            (25, 100, [
-                'first', 'previous', 1, 2, 4, 11, 15, 22, 24, 25, 26, 28, 35,
-                55, 70, 90, 97, 99, 100, 'next', 'last']),
-            (75, 100, [
-                'first', 'previous', 1, 2, 4, 11, 31, 45, 65, 72, 74, 75, 76,
-                78, 85, 90, 97, 99, 100, 'next', 'last']),
-            (100, 100, [
-                'first', 'previous', 1, 2, 4, 11, 31, 70, 90, 97, 99, 100]),
+            (
+                25, 100, [
+                    'first', 'previous', 1, 2, 4, 11, 15, 22, 24, 25, 26, 28, 35,
+                    55, 70, 90, 97, 99, 100, 'next', 'last',
+                ],
+            ),
+            (
+                75, 100, [
+                    'first', 'previous', 1, 2, 4, 11, 31, 45, 65, 72, 74, 75, 76,
+                    78, 85, 90, 97, 99, 100, 'next', 'last',
+                ],
+            ),
+            (
+                100, 100, [
+                    'first', 'previous', 1, 2, 4, 11, 31, 70, 90, 97, 99, 100,
+                ],
+            ),
         )
         self._run_tests(test_data)
 
     def test_get_elastic_page_numbers_more(self):
         # Ensure the callable returns the expected values for larger numbers.
         test_data = (
-            (1, 500, [
-                1, 5, 13, 41, 121, 380, 460, 488, 496, 500, 'next', 'last']),
-            (150, 500, [
-                'first', 'previous', 1, 2, 4, 11, 31, 120, 140, 147, 149, 150,
-                153, 159, 180, 240, 410, 470, 491, 497, 500, 'next', 'last']),
-            (350, 500, [
-                'first', 'previous', 1, 4, 10, 31, 91, 260, 320, 341, 347, 350,
-                351, 353, 360, 380, 470, 490, 497, 499, 500, 'next', 'last']),
-            (500, 500, [
-                'first', 'previous', 1, 5, 13, 41, 121, 380, 460, 488, 496,
-                500]),
-            (100, 1000, [
-                'first', 'previous', 1, 2, 4, 11, 31, 70, 90, 97, 99, 100, 109,
-                127, 190, 370, 730, 910, 973, 991, 1000, 'next', 'last']),
-            (1000, 10000, [
-                'first', 'previous', 1, 10, 28, 91, 271, 730, 910, 973, 991,
-                1000, 1090, 1270, 1900, 3700, 7300, 9100, 9730, 9910, 10000,
-                'next', 'last']),
-            (10000, 100000, [
-                'first', 'previous', 1, 100, 298, 991, 2971, 7030, 9010, 9703,
-                9901, 10000, 10900, 12700, 19000, 37000, 73000, 91000, 97300,
-                99100, 100000, 'next', 'last']),
-            (100000, 1000000, [
-                'first', 'previous', 1, 1000, 2998, 9991, 29971, 70030, 90010,
-                97003, 99001, 100000, 109000, 127000, 190000, 370000, 730000,
-                910000, 973000, 991000, 1000000, 'next', 'last']),
+            (
+                1, 500, [
+                    1, 5, 13, 41, 121, 380, 460, 488, 496, 500, 'next', 'last',
+                ],
+            ),
+            (
+                150, 500, [
+                    'first', 'previous', 1, 2, 4, 11, 31, 120, 140, 147, 149, 150,
+                    153, 159, 180, 240, 410, 470, 491, 497, 500, 'next', 'last',
+                ],
+            ),
+            (
+                350, 500, [
+                    'first', 'previous', 1, 4, 10, 31, 91, 260, 320, 341, 347, 350,
+                    351, 353, 360, 380, 470, 490, 497, 499, 500, 'next', 'last',
+                ],
+            ),
+            (
+                500, 500, [
+                    'first', 'previous', 1, 5, 13, 41, 121, 380, 460, 488, 496,
+                    500,
+                ],
+            ),
+            (
+                100, 1000, [
+                    'first', 'previous', 1, 2, 4, 11, 31, 70, 90, 97, 99, 100, 109,
+                    127, 190, 370, 730, 910, 973, 991, 1000, 'next', 'last',
+                ],
+            ),
+            (
+                1000, 10000, [
+                    'first', 'previous', 1, 10, 28, 91, 271, 730, 910, 973, 991,
+                    1000, 1090, 1270, 1900, 3700, 7300, 9100, 9730, 9910, 10000,
+                    'next', 'last',
+                ],
+            ),
+            (
+                10000, 100000, [
+                    'first', 'previous', 1, 100, 298, 991, 2971, 7030, 9010, 9703,
+                    9901, 10000, 10900, 12700, 19000, 37000, 73000, 91000, 97300,
+                    99100, 100000, 'next', 'last',
+                ],
+            ),
+            (
+                100000, 1000000, [
+                    'first', 'previous', 1, 1000, 2998, 9991, 29971, 70030, 90010,
+                    97003, 99001, 100000, 109000, 127000, 190000, 370000, 730000,
+                    910000, 973000, 991000, 1000000, 'next', 'last',
+                ],
+            ),
         )
         self._run_tests(test_data)
 
@@ -392,7 +487,8 @@ class GetQuerystringForPageTest(TestCase):
         # Ensure the querystring is empty for the default page.
         request = self.factory.get('/')
         querystring = utils.get_querystring_for_page(
-            request, 3, 'mypage', default_number=3)
+            request, 3, 'mypage', default_number=3,
+        )
         self.assertEqual('', querystring)
 
     def test_composition(self):

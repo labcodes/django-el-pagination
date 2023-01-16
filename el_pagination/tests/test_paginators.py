@@ -1,13 +1,12 @@
 """Paginator tests."""
 
-from __future__ import unicode_literals
 
 from django.test import TestCase
 
 from el_pagination import paginators
 
 
-class PaginatorTestMixin(object):
+class PaginatorTestMixin:
     """Base test mixin for paginators.
 
     Subclasses (actual test cases) must define the ``paginator_class`` name.
@@ -17,7 +16,8 @@ class PaginatorTestMixin(object):
         self.items = list(range(30))
         self.per_page = 7
         self.paginator = self.paginator_class(
-            self.items, self.per_page, orphans=2)
+            self.items, self.per_page, orphans=2,
+        )
 
     def test_object_list(self):
         # Ensure the paginator correctly returns objects for each page.
@@ -62,7 +62,8 @@ class DifferentFirstPagePaginatorTestMixin(PaginatorTestMixin):
         self.items = list(range(26))
         self.per_page = 7
         self.paginator = self.paginator_class(
-            self.items, self.per_page, first_page=3, orphans=2)
+            self.items, self.per_page, first_page=3, orphans=2,
+        )
 
     def test_no_orphans(self):
         # Ensure exceeding orphans generate a new page.
@@ -129,12 +130,14 @@ class LazyPaginatorTest(PaginatorTestMixin, TestCase):
 
 
 class DifferentFirstPageDefaultPaginatorTest(
-        DifferentFirstPagePaginatorTestMixin, TestCase):
+        DifferentFirstPagePaginatorTestMixin, TestCase,
+):
 
     paginator_class = paginators.DefaultPaginator
 
 
 class DifferentFirstPageLazyPaginatorTest(
-        DifferentFirstPagePaginatorTestMixin, TestCase):
+        DifferentFirstPagePaginatorTestMixin, TestCase,
+):
 
     paginator_class = paginators.LazyPaginator

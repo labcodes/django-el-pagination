@@ -1,6 +1,5 @@
 """Endless template tags tests."""
 
-from __future__ import unicode_literals
 
 import string
 import sys
@@ -19,10 +18,11 @@ from el_pagination.models import PageList
 from project.models import make_model_instances
 
 skip_if_old_etree = unittest.skipIf(
-    sys.version_info < (2, 7), 'XPath not supported by this Python version.')
+    sys.version_info < (2, 7), 'XPath not supported by this Python version.',
+)
 
 
-class TemplateTagsTestMixin(object):
+class TemplateTagsTestMixin:
     """Base test mixin for template tags."""
 
     def setUp(self):
@@ -62,10 +62,11 @@ class EtreeTemplateTagsTestMixin(TemplateTagsTestMixin):
 
         Does not return the context.
         """
-        html, _ = super(EtreeTemplateTagsTestMixin, self).render(
-            request, contents, **kwargs)
+        html, _ = super().render(
+            request, contents, **kwargs,
+        )
         if html:
-            return etree.fromstring('<html>{0}</html>'.format(html))
+            return etree.fromstring(f'<html>{html}</html>')
 
 
 class PaginateTestMixin(TemplateTagsTestMixin):
@@ -97,7 +98,7 @@ class PaginateTestMixin(TemplateTagsTestMixin):
 
     def render(self, request, contents, **kwargs):
         text = string.Template(contents).substitute(tagname=self.tagname)
-        return super(PaginateTestMixin, self).render(request, text, **kwargs)
+        return super().render(request, text, **kwargs)
 
     def test_object_list(self):
         # Ensure the queryset is correctly updated.
@@ -117,7 +118,8 @@ class PaginateTestMixin(TemplateTagsTestMixin):
         # In this case, the argument is provided as context variable.
         template = '{% $tagname per_page entries %}'
         _, context = self.render(
-            self.request(), template, entries=range(47), per_page=5)
+            self.request(), template, entries=range(47), per_page=5,
+        )
         self.assertRangeEqual(range(5), context['entries'])
 
     def test_first_page_argument(self):
@@ -142,7 +144,8 @@ class PaginateTestMixin(TemplateTagsTestMixin):
         self.assertSequenceEqual([0], context['entries'])
         # Check the second page.
         _, context = self.render(
-            self.request(page=2), template, **context_data)
+            self.request(page=2), template, **context_data,
+        )
         self.assertRangeEqual(range(1, 41), context['entries'])
 
     def test_starting_from_page_argument(self):
@@ -156,14 +159,16 @@ class PaginateTestMixin(TemplateTagsTestMixin):
         # In this case, the argument is provided as context variable.
         template = '{% $tagname 10 entries starting from page mypage %}'
         _, context = self.render(
-            self.request(), template, entries=range(47), mypage=2)
+            self.request(), template, entries=range(47), mypage=2,
+        )
         self.assertRangeEqual(range(10, 20), context['entries'])
 
     def test_using_argument(self):
         # Ensure the template tag uses the given querystring key.
         template = '{% $tagname 20 objects using "my-page" %}'
         _, context = self.render(
-            self.request(data={'my-page': 2}), template)
+            self.request(data={'my-page': 2}), template,
+        )
         self.assertRangeEqual(range(20, 40), context['objects'])
 
     def test_using_argument_as_variable(self):
@@ -171,7 +176,8 @@ class PaginateTestMixin(TemplateTagsTestMixin):
         # In this case, the argument is provided as context variable.
         template = '{% $tagname 20 entries using qskey %}'
         _, context = self.render(
-            self.request(p=3), template, entries=range(47), qskey='p')
+            self.request(p=3), template, entries=range(47), qskey='p',
+        )
         self.assertRangeEqual(range(40, 47), context['entries'])
 
     def test_with_argument(self):
@@ -186,7 +192,8 @@ class PaginateTestMixin(TemplateTagsTestMixin):
         path = '/my/path/'
         template = '{% $tagname 10 entries with path %}'
         _, context = self.render(
-            self.request(), template, entries=range(47), path=path)
+            self.request(), template, entries=range(47), path=path,
+        )
         self.assertEqual(path, context['endless']['override_path'])
 
     def test_as_argument(self):
@@ -208,7 +215,8 @@ class PaginateTestMixin(TemplateTagsTestMixin):
         )
         _, context = self.render(
             self.request(), template, objects=range(47), mypage='page-number',
-            path='mypath')
+            path='mypath',
+        )
         self.assertRangeEqual(range(5, 15), context['paginated'])
         self.assertEqual('mypath', context['endless']['override_path'])
 
@@ -266,7 +274,8 @@ class PaginateTestMixin(TemplateTagsTestMixin):
         _, context = self.render(
             self.request(page=2, entries=3), template,
             objects=range(47), entries={'all': letters},
-            items=['foo', 'bar'], items_page='p')
+            items=['foo', 'bar'], items_page='p',
+        )
         self.assertRangeEqual(range(10, 30), context['objects'])
         self.assertSequenceEqual(['foo'], context['items'])
         self.assertSequenceEqual(letters[10:15], context['myentries'])
@@ -297,7 +306,7 @@ class PaginateTest(PaginateTestMixin, TestCase):
         # In this case, the argument is provided as context variable.
         template = '{% $tagname 10 objects starting from page mypage %}'
         _, context = self.render(
-            self.request(), template, objects=range(47), mypage=-2
+            self.request(), template, objects=range(47), mypage=-2,
         )
         self.assertRangeEqual(range(30, 40), context['objects'])
 
@@ -363,7 +372,7 @@ class ShowMoreTest(EtreeTemplateTagsTestMixin, TestCase):
         template = '{% paginate objects %}{% show_more %}'
         tree = self.render(self.request(), template)
         link = tree.find('.//a[@class="endless_more"]')
-        expected = '/?{0}={1}'.format(settings.PAGE_LABEL, 2)
+        expected = f'/?{settings.PAGE_LABEL}={2}'
         self.assertEqual(expected, link.attrib['href'])
 
     def test_page_next_url(self):
@@ -371,7 +380,7 @@ class ShowMoreTest(EtreeTemplateTagsTestMixin, TestCase):
         template = '{% paginate objects %}{% show_more %}'
         tree = self.render(self.request(page=3), template)
         link = tree.find('.//a[@class="endless_more"]')
-        expected = '/?{0}={1}'.format(settings.PAGE_LABEL, 4)
+        expected = f'/?{settings.PAGE_LABEL}={4}'
         self.assertEqual(expected, link.attrib['href'])
 
     def test_last_page(self):
@@ -443,7 +452,8 @@ class GetPagesTest(TemplateTagsTestMixin, TestCase):
             '{% get_pages %}'
         )
         _, context = self.render(
-            self.request(), template, objects=range(47), page=1)
+            self.request(), template, objects=range(47), page=1,
+        )
         page = context['pages'].last()
         self.assertEqual('', page.url)
 
@@ -510,14 +520,16 @@ class ShowCurrentNumberTest(TemplateTagsTestMixin, TestCase):
         # In this case, the argument is provided as context variable.
         template = '{% show_current_number starting from page mypage %}'
         html, _ = self.render(
-            self.request(), template, entries=range(47), mypage=2)
+            self.request(), template, entries=range(47), mypage=2,
+        )
         self.assertEqual(2, int(html))
 
     def test_using_argument(self):
         # Ensure the template tag uses the given querystring key.
         template = '{% show_current_number using "mypage" %}'
         html, _ = self.render(
-            self.request(mypage=2), template)
+            self.request(mypage=2), template,
+        )
         self.assertEqual(2, int(html))
 
     def test_using_argument_as_variable(self):
@@ -525,7 +537,8 @@ class ShowCurrentNumberTest(TemplateTagsTestMixin, TestCase):
         # In this case, the argument is provided as context variable.
         template = '{% show_current_number using qskey %}'
         html, _ = self.render(
-            self.request(p=5), template, entries=range(47), qskey='p')
+            self.request(p=5), template, entries=range(47), qskey='p',
+        )
         self.assertEqual(5, int(html))
 
     def test_as_argument(self):
@@ -545,7 +558,8 @@ class ShowCurrentNumberTest(TemplateTagsTestMixin, TestCase):
             'as number %}'
         )
         html, context = self.render(
-            self.request(), template, objects=range(47), mypage='page-number')
+            self.request(), template, objects=range(47), mypage='page-number',
+        )
         self.assertEqual(2, context['number'])
 
     def test_invalid_arguments(self):
